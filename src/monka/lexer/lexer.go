@@ -1,7 +1,7 @@
 package lexer
 
 import (
-	"monkey/token"
+	"monka/token"
 )
 
 func (l *Lexer) NextToken() token.Token {
