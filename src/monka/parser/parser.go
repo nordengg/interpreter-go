@@ -88,7 +88,7 @@ func (p *Parser) Errors() []string {
 }
 
 func (p *Parser) peekError(t token.TokenType) {
-	msg := fmt.Sprintf("expectred next token to be %s, get %s instead",
+	msg := fmt.Sprintf("expected next token to be %s, get %s instead",
 		t, p.peekToken.Type)
 	p.errors = append(p.errors, msg)
 }
@@ -137,11 +137,13 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 		return nil
 	}
 
-	// TODO: We're skipping the expressions until we
-	// encounter a semicolon
-	for !p.curTokenIs(token.SEMICOLON) {
-		p.nextToken()
-	}
+  p.nextToken()
+  
+  stmt.Value = p.parseExpression(LOWEST)
+
+  if p.peekTokenIs(token.SEMICOLON) {
+    p.nextToken()
+  }
 
 	return stmt
 }
@@ -151,11 +153,11 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 
 	p.nextToken()
 
-	// TODO: We're skipping the expressions until we
-	// encounter a semicolon
-	for !p.curTokenIs(token.SEMICOLON) {
-		p.nextToken()
-	}
+  stmt.ReturnValue = p.parseExpression(LOWEST)
+
+  if p.peekTokenIs(token.SEMICOLON) {
+    p.nextToken()
+  }
 
 	return stmt
 }
