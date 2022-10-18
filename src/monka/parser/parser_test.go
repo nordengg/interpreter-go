@@ -14,7 +14,7 @@ func TestLetStatements(t *testing.T) {
     expectedValue       interface{}
   }{
     {"let x = 5;", "x", 5},
-    {"let y = true;", "y", true}.
+    {"let y = true;", "y", true},
     {"let foobar = y;", "foobar", "y"},
   }
 
@@ -24,7 +24,7 @@ func TestLetStatements(t *testing.T) {
     program := p.ParseProgram()
     checkParserErrors(t, p)
 
-    if len(program.Staetments) != 1 {
+    if len(program.Statements) != 1 {
       t.Fatalf("program.Statements does not contain 1 statements. got=%d", len(program.Statements))
     }
 
@@ -43,38 +43,25 @@ func TestLetStatements(t *testing.T) {
 func TestReturnStatements(t *testing.T) {
   tests := []struct {
     input     string
-    expected  int64
+    expected  interface{}
   }{
     {"return 5;", 5},
-    {"return 10;", 10},
-    {"return 993322;", 993322},
-    {`
-      if (10 > 1) {
-        if (10 > 1) {
-          return 10;
-        }
-        
-        return 1;
-      }
-    `}
+    {"return true;", true},
+    {"return foobar;", "foobar"},
   }
 
-  input := `
-	return 5;
-	return 10;
-	return 993322;
-	`
-
-	for _, stmt := range program.Statements {
-    l := lexer.New(input)
+	for _, tt := range tests {
+    l := lexer.New(tt.input)
     p := New(l)
 
     program := p.ParseProgram()
     checkParserErrors(t, p)
 
-    if len(program.Statements) != 3 {
-      t.Fatalf("program.Statements does not contain 3 statements. got=%d", len(program.Statements))
+    if len(program.Statements) != 1 {
+      t.Fatalf("program.Statements does not contain 1 statements. got=%d", len(program.Statements))
     }
+
+    stmt := program.Statements[0]
     returnStmt, ok := stmt.(*ast.ReturnStatement)
 		if !ok {
 			t.Errorf("stmt not *ast.ReturnStatement. got=%T", stmt)
@@ -85,6 +72,25 @@ func TestReturnStatements(t *testing.T) {
 				returnStmt.TokenLiteral())
 		}
 	}
+}
+
+func TestStringLiteralExpression(t *testing.T) {
+  input := `"hello world";`
+
+  l := lexer.New(input)
+  p := New(l)
+  program := p.ParseProgram()
+  checkParserErrors(t, p)
+
+  stmt := program.Statements[0].(*ast.ExpressionStatement)
+  literal, ok := stmt.Expression.(*ast.StringLiteral)
+  if !ok {
+    t.Fatalf("exp not *ast.StringLiteral. got=%T", stmt.Expression)
+  }
+
+  if literal.Value != "hello world" {
+    t.Errorf("literal.Value not %q. got=%q", "hello world", literal.Value)
+  }
 }
 
 func checkParserErrors(t *testing.T, p *Parser) {
